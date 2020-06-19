@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">Fast Desk</string>
+    <string name="ticket_description">Description</string>
+    <string name="ticket_title">Title</string>
+    <string name="ticket_date_time">date_time</string>
+    <string name="first_name_last_name">First_name Last_name</string>
+    <string name="loading_data">Loading…</string>
+    <string name="menu_logout">Logout</string>
+    <string name="menu_sort">Sort</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="title_activity_ticket_detail">TicketDetailActivity</string>
+    <string name="large_text">
+        "Motion provides meaning.\n\n"
+
+        "Motion respects and reinforces the user as the prime mover. Primary user actions are "
+        "inflection points that initiate motion, transforming the whole design.\n"
+        "Motion is meaningful and appropriate, serving to focus attention and maintain continuity. "
+        "Feedback is subtle yet clear. Transitions are efﬁcient yet coherent.\n\n"
+    </string>
+    <string name="action_settings">Settings</string>
+    <string name="department">Department</string>
+    <string name="customerName">Customer</string>
+    <string name="priority">Priority</string>
+    <string name="get_customer_button">Get customer</string>
+
+    <string-array name="priority_spinner">
+        <item>--</item>
+        <item>LOW</item>
+        <item>MEDIUM</item>
+        <item>HIGH</item>
+    </string-array>
+    <string-array name="queue_spinner">
+        <item>Open Tickets</item>
+        <item>All Closed Tickets</item>
+    </string-array>
+    <string name="title_activity_customer_list">CustomerListActivity</string>
+    <string name="show_all_customers">show all customers</string>
+    <string name="email_address">JohnDoe@public.com</string>
+    <string name="phone_number">08012345678</string>
+    <string name="address">132, My Street, Bigtown FCT</string>
+    <string name="menu_search">Search</string>
+    <string name="customer_id">123456789</string>
+    <string name="create_ticket">Create Ticket</string>
+    <string name="priority_selector_title">SELECT PRIORITY LEVEL</string>
+    <string name="note_hint">Type your message here</string>
+    <string name="attachment_button_content_description">Attachment Button</string>
+    <string name="submit">submit</string>
+    <string name="added_image_content_description">added image</string>
+    <string name="ticket_image_content_description">ticket image</string>
+    <string name="title_activity_customer_detail">CustomerDetailActivity</string>
+    <string name="customer_open_tickets_label">OPEN TICKETS</string>
+</resources>
