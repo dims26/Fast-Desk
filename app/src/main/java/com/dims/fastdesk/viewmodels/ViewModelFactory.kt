@@ -11,8 +11,6 @@ import com.dims.fastdesk.ui.MainActivity
 class ViewModelFactory @JvmOverloads constructor(val application: Application, val activity: Activity = Activity(),
                        val ticket: Ticket = Ticket(), val customer: Customer = Customer()) : ViewModelProvider.Factory {
 
-
-
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         @Suppress("unchecked_cast")
         return when{
