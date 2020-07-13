@@ -65,6 +65,11 @@ public class TicketsViewModel extends AndroidViewModel {
         FirebaseUtils.openFirebaseReference(activity);
         FirebaseUtils.attachListener();
 
+        refresh();
+    }
+
+    public void refresh() {
+        pagedListLiveDataAvailable.postValue(false);
         mAuth.getCurrentUser().getIdToken(true).addOnSuccessListener(new OnSuccessListener<GetTokenResult>() {
             @Override
             public void onSuccess(GetTokenResult getTokenResult) {
@@ -96,12 +101,7 @@ public class TicketsViewModel extends AndroidViewModel {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
                 //run any UI related code from the UI thread
-                mAuth.getCurrentUser().getIdToken(true).addOnSuccessListener(new OnSuccessListener<GetTokenResult>() {
-                    @Override
-                    public void onSuccess(GetTokenResult getTokenResult) {
-                        FirebaseFunctionUtils.getStaffTicketRef(getTokenResult.getToken(), getTicketsCallback());
-                    }
-                });
+                refresh();
             }
 
             @Override

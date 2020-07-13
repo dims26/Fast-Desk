@@ -1,6 +1,7 @@
 package com.dims.fastdesk.datasource;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.paging.DataSource;
@@ -41,7 +42,7 @@ public class TicketDataSourceFactory extends DataSource.Factory<Query, Ticket> {
     }
 
     //getter for TicketLiveDataSource
-    public MutableLiveData<TicketDataSource> getTicketLiveDataSource() {
+    public LiveData<TicketDataSource> getTicketLiveDataSource() {
         return ticketLiveDataSource;
     }
 }

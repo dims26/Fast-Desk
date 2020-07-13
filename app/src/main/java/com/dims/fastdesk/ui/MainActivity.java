@@ -1,5 +1,6 @@
 package com.dims.fastdesk.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -239,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    @SuppressLint("ApplySharedPref")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -249,8 +251,15 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("Log In Issue", response.getError().toString());
                 finish();
             }else{
-                if (ticketsViewModel.getPagedListLiveDataAvailable().getValue())
-                    recyclerAdapter.submitList(ticketsViewModel.ticketPagedListLiveData.getValue());
+                //clear preferences
+                SharedPreferences prefs = getApplication().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                final SharedPreferences.Editor editor = prefs.edit();
+                editor.clear();
+                editor.commit();
+                ticketsViewModel.refresh();
+                ticketsViewModel.views.set(0, "");
+                dataAdapter.notifyDataSetChanged();
+                recyclerAdapter.submitList(null);
             }
         }
     }
