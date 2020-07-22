@@ -1,12 +1,14 @@
 # Fast-Desk
-Android Issue management client with back-end implemented with Firebase.Communicates with back-end using Firebase SDK and exposed http endpoints.
+Android Issue management client following MVVM pattern with back-end implemented with Firebase. Communicates with back-end using Firebase SDK and exposed HTTP endpoints.
 
 <img src=https://github.com/dims26/Fast-Desk/blob/master/app/src/main/res/drawable/splash_screen.png width="144" height="256" />
 
 ## Features
 * Authentication
+* Role based actions
 * Create and assign tickets
 * View, Update and Close tickets
+* Attach and upload media
 * Attach client information to ticket
 * Client search
 * Notifications on events
