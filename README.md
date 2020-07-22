@@ -1,7 +1,7 @@
 # Fast-Desk
 Android Issue management client with back-end implemented with Firebase.Communicates with back-end using Firebase SDK and exposed http endpoints.
 
-<img src=https://github.com/dims26/Fast-Desk/blob/master/app/src/main/res/drawable/splash_screen.png width="288" height="512" />
+<img src=https://github.com/dims26/Fast-Desk/blob/master/app/src/main/res/drawable/splash_screen.png width="144" height="256" />
 
 ## Features
 * Authentication
@@ -67,3 +67,21 @@ Android Issue management client with back-end implemented with Firebase.Communic
  </tr>
 </table>
 
+## Built using
+
+* [Android Jetpack](https://developer.android.com/jetpack/?gclid=Cj0KCQjwhJrqBRDZARIsALhp1WQBmjQ4WUpnRT4ETGGR1T_rQG8VU3Ta_kVwiznZASR5y4fgPDRYFqkaAhtfEALw_wcB) - Official suite of libraries, tools, and guidance to help developers write high-quality apps.
+  * [Android KTX](https://developer.android.com/kotlin/ktx)
+  * [LiveData](https://developer.android.com/topic/libraries/architecture/livedata)
+  * [Paging](https://developer.android.com/jetpack/androidx/releases/paging)
+  * [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
+* [Firebase](https://firebase.google.com/) - Backend-as-a-Service solution.
+  * [Authentication](https://firebase.google.com/products/auth)
+  * [Cloud Firestore](https://firebase.google.com/products/firestore)
+  * [Cloud Messaging](https://firebase.google.com/products/cloud-messaging)
+  * [Cloud Functions](https://developer.android.com/topic/libraries/architecture/viewmodel)
+  * [Cloud Storage](https://firebase.google.com/products/storage)
+* [FirebaseUI](https://github.com/firebase/FirebaseUI-Android) - Optimized UI components for Firebase.
+* [Glide](https://github.com/bumptech/glide) - A media management and image loading framework for Android.
+* [StfalconImageViewer](https://github.com/stfalcon-studio/StfalconImageViewer) - An Android full-screen image viewer.
+* [Matisse](https://github.com/zhihu/Matisse) - A local image and video selector for Android.
+* [FlexboxLayout](https://github.com/google/flexbox-layout) - A library bringing capabilities of CSS Flexible Box Layout Module to Android.
