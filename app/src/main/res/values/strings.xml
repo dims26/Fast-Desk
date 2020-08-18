@@ -49,4 +49,10 @@
     <string name="ticket_image_content_description">ticket image</string>
     <string name="title_activity_customer_detail">CustomerDetailActivity</string>
     <string name="customer_open_tickets_label">OPEN TICKETS</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="edit_customer_details_contentDescription">Edit customer details</string>
+    <string name="error_message">Error loading items</string>
+    <string name="empty_message">No open issues</string>
+    <string name="permission_rationale">Permission required to access media on device</string>
 </resources>

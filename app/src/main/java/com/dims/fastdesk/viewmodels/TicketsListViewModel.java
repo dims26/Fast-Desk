@@ -1,7 +1,6 @@
 package com.dims.fastdesk.viewmodels;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -37,14 +36,14 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class TicketsViewModel extends AndroidViewModel {
+public class TicketsListViewModel extends AndroidViewModel {
 
     public static final String CUSTOMER_LIST = "Customer List";
     public static final String ALL_CLOSED_TICKETS = "All Closed Tickets";
     //creating livedata for PagedList  and PagedKeyedDataSource
     public LiveData<PagedList<Ticket>> ticketPagedListLiveData;
     public boolean newerFirst = true;
-    private TicketsViewModel viewModel = this;
+    private TicketsListViewModel viewModel = this;
 
     //Livedata for checking pagedList availability
     private MutableLiveData<Boolean> pagedListLiveDataAvailable = new MutableLiveData<>(false);
@@ -58,7 +57,7 @@ public class TicketsViewModel extends AndroidViewModel {
     private final FirebaseAuth mAuth;
     private ListenerRegistration listenerRegistration;
 
-    TicketsViewModel(Activity activity){
+    TicketsListViewModel(Activity activity){
         super(activity.getApplication());
         //initialize Firebase auth
         mAuth = FirebaseAuth.getInstance();
@@ -113,7 +112,7 @@ public class TicketsViewModel extends AndroidViewModel {
                     //get reference string
                     String ref = extractStaffAndTicketData(body);
 
-                    //retrieved tickets using the path in response
+                    //retrieve tickets using the path in response
                     Query reference = FirebaseFirestore.getInstance()
                             .collection(ref);
 

@@ -82,7 +82,7 @@ public class TicketListPagedAdapter extends PagedListAdapter<Ticket, TicketListP
             customerNameTextView = itemView.findViewById(R.id.nameTextView);
             dateTextView = itemView.findViewById(R.id.dateTextView);
             titleTextview = itemView.findViewById(R.id.titleTextView);
-            descriptionTextView = itemView.findViewById(R.id.descriptionTextView);
+            descriptionTextView = itemView.findViewById(R.id.brief_textview);
         }
     }
 }

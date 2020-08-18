@@ -52,6 +52,7 @@ import static android.app.Activity.RESULT_OK;
 
 public class NoteInputFragment extends DialogFragment implements View.OnClickListener {
 
+    private NoteUpdateInterface updater;
     private static final int REQUEST_CODE_CHOOSE = 442;
     private static final int MY_PERMISSIONS_REQUEST_READ_STORAGE = 433;
     private TextInputEditText mEditText;
@@ -59,15 +60,16 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
     private Button submitButton;
     private List<Uri> mSelected;
     private List<Integer> ids;
-    private TicketDetailActivity ticketDetailActivity;
     private RelativeLayout progressLayout;
     private ProgressBar determinateProgressBar;
     private TextView imageNumberTextView, totalImageCountTextView;
 
+    public NoteInputFragment(NoteUpdateInterface updater){ this.updater = updater; }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.note_input_fragment, container);
+        View view = inflater.inflate(R.layout.fragment_input_note, container);
         mEditText = view.findViewById(R.id.noteEditText);
         submitButton = view.findViewById(R.id.submitButton);
         attachmentButton = view.findViewById(R.id.attachmentButton);
@@ -80,8 +82,6 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         submitButton.setOnClickListener(this);
         attachmentButton.setOnClickListener(this);
         progressLayout.setVisibility(View.GONE);
-
-        ticketDetailActivity = (TicketDetailActivity) getActivity();
 
         ids = Arrays.asList(R.id.imageView1, R.id.imageView2, R.id.imageView3);
 
@@ -96,7 +96,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         super.onStart();
 
         //update progressBar
-        ticketDetailActivity.ticketDetailViewModel.getImageUploadProgress().observe(this, new Observer<Integer>() {
+        updater.getImageUploadProgress().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
                 if (integer >= 0){
@@ -107,7 +107,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         });
 
         //update current upload info
-        ticketDetailActivity.ticketDetailViewModel.getImageUploadProgressBar().observe(this, new Observer<Integer>() {
+        updater.getImageUploadProgressBar().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer integer) {
                 if (integer.equals(ImageUploadState.SUCCESS)){
@@ -155,22 +155,17 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
                         != PackageManager.PERMISSION_GRANTED) {
                     // Permission is not granted, request for permission
                     // Should we show an explanation?
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
                         // Show an explanation to the user *asynchronously* -- don't block
                         // this thread waiting for the user's response! After the user
                         // sees the explanation, try again to request the permission.
-                        Toast.makeText(getActivity(), "Permission required to access media on device", Toast.LENGTH_LONG)
+                        Toast.makeText(getActivity(), R.string.permission_rationale, Toast.LENGTH_LONG)
                                 .show();
-                        ActivityCompat.requestPermissions(getActivity(),
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                MY_PERMISSIONS_REQUEST_READ_STORAGE);
-
-                    } else {
-                        // No explanation needed; request the permission
-                        ActivityCompat.requestPermissions(getActivity(),
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                MY_PERMISSIONS_REQUEST_READ_STORAGE);
                     }
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                            MY_PERMISSIONS_REQUEST_READ_STORAGE);
                 }else {
                     Matisse.from(this)
                             .choose(MimeType.ofImage())
@@ -192,7 +187,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
             return;
         }
         //upload images to firebaseStorage
-        ticketDetailActivity.ticketDetailViewModel.uploadImages(mSelected);
+        updater.uploadImages(mSelected);
     }
 
     private void updateTicket() {
@@ -214,17 +209,17 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         content.put(Ticket.NOTES_AUTHOR, creatorFName + " " + creatorLName);
         content.put(Ticket.NOTES_DEPARTMENT, creatorDepartment.toLowerCase());
         if (!mSelected.isEmpty()) {
-            content.put(Ticket.NOTES_IMAGES, ticketDetailActivity.ticketDetailViewModel.imageDownloadUriList);
+            content.put(Ticket.NOTES_IMAGES, updater.getImageDownloadUriList());
         }
 
         note.put(Ticket.NOTES, FieldValue.arrayUnion(content));
 
         //hide progressBar and associated views, and set progress listeners to idle
         progressLayout.setVisibility(View.GONE);
-        ticketDetailActivity.ticketDetailViewModel.setImageUploadProgressBar(ImageUploadState.IDLE);//important
+        updater.setImageUploadProgressBar(ImageUploadState.IDLE);//important
 
-        ticketDetailActivity.ticketDetailViewModel.noteEntry = content;
-        ticketDetailActivity.ticketDetailViewModel.updateTicket(note);
+        updater.setNoteEntry(content);
+        updater.updateTicket(note);
 
         this.dismiss();
     }

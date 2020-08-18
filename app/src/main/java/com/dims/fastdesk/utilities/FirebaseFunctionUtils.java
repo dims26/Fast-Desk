@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -17,11 +18,14 @@ public class FirebaseFunctionUtils{
     private static String URL_DEPARTMENT;
     private static String URL_MOVE;
     private static String URL_CLOSE;
+    private static String URL_CUSTOMER;
 
     static {
         try {
             InputStreamReader reader = new InputStreamReader(
-                    FirebaseFunctionUtils.class.getClassLoader().getResourceAsStream("res/raw/urls.json"));
+                    Objects.requireNonNull(
+                            FirebaseFunctionUtils.class.getClassLoader()
+                    ).getResourceAsStream("res/raw/urls.json"));
             JsonReader jsonReader = new JsonReader(reader);
             jsonReader.beginObject();
             while (jsonReader.hasNext()) {
@@ -33,6 +37,8 @@ public class FirebaseFunctionUtils{
                 URL_MOVE = jsonReader.nextString();
                 jsonReader.nextName();
                 URL_CLOSE = jsonReader.nextString();
+                jsonReader.nextName();
+                URL_CUSTOMER = jsonReader.nextString();
             }
             jsonReader.endObject();
             jsonReader.close();
@@ -58,6 +64,27 @@ public class FirebaseFunctionUtils{
 
         Request request = new Request.Builder()
                 .url(URL_STAFF_TICKET_REF
+                        + "?token=" + token)
+                .get()
+                .build();
+
+        client.newCall(request)
+                //enqueue enables an asynchronous call and retrieval of the result via a callback
+                .enqueue(callback);
+    }
+
+    /**Called to get the customer data as well as the name of the collection group for customer tickets
+     *
+     * @param token An auth token from the currently logged in user to enable backend authentication
+     * @param callback The callback which defines the actions to be taken depending on the success
+     *                 of the network call
+     */
+    public static void getCustomerData(String token, Callback callback) {
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(URL_CUSTOMER
                         + "?token=" + token)
                 .get()
                 .build();

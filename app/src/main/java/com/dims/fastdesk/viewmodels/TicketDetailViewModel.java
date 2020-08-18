@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.dims.fastdesk.models.Ticket;
+import com.dims.fastdesk.ui.NoteUpdateInterface;
 import com.dims.fastdesk.utilities.FirebaseFunctionUtils;
 import com.dims.fastdesk.utilities.FirebaseUtils;
 import com.dims.fastdesk.utilities.MoveTicketState;
@@ -33,7 +34,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class TicketDetailViewModel extends AndroidViewModel {
+public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdateInterface {
 
     public static final String PRIORITY_UPDATE_KEY = "priority";
     public static final String NOTES_UPDATE_KEY = "notes";
@@ -56,9 +57,30 @@ public class TicketDetailViewModel extends AndroidViewModel {
         this.ticket = ticket;
     }
 
-    public void updateTicket(Map<String, Object> updateMap) {
+    @NotNull
+    @Override
+    public List<String> getImageDownloadUriList() { return imageDownloadUriList; }
+
+    @Override
+    public void setImageDownloadUriList(@NotNull List<String> imageDownloadUriList) { this.imageDownloadUriList = imageDownloadUriList; }
+
+    @NotNull
+    @Override
+    public Map<String, Object> getNoteEntry() { return noteEntry; }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setNoteEntry(@NotNull Map<String, ?> noteEntry) { this.noteEntry = (Map<String, Object>) noteEntry; }
+
+//    public void updateTicket(Map<String, Object> updateMap) {
+//        setTicketCreatedStatus(NetworkState.LOADING);
+//        FirebaseUtils.updateTicket(ticket, updateMap, this);
+//    }todo make sure this works when testing staff module
+    @SuppressWarnings("unchecked")
+    @Override
+    public void updateTicket(@NotNull Map<String, ?> updateMap) {
         setTicketCreatedStatus(NetworkState.LOADING);
-        FirebaseUtils.updateTicket(ticket, updateMap, this);
+        FirebaseUtils.updateTicket(ticket, (Map<String, Object>) updateMap, this);
     }
 
     public void setDepartmentLiveData(Integer integer){
@@ -73,7 +95,11 @@ public class TicketDetailViewModel extends AndroidViewModel {
         imageUploadProgressLiveData.postValue(progress);
     }
 
-    public void setImageUploadProgressBar(Integer progress){
+//    public void setImageUploadProgressBar(Integer progress){
+//        imageUploadProgressBarLiveData.postValue(progress);
+//    }
+    @Override
+    public void setImageUploadProgressBar(int progress) {
         imageUploadProgressBarLiveData.postValue(progress);
     }
 
@@ -85,10 +111,12 @@ public class TicketDetailViewModel extends AndroidViewModel {
         return ticketUpdatedLiveData;
     }
 
+    @Override
     public LiveData<Integer> getImageUploadProgressBar(){
         return imageUploadProgressBarLiveData;
     }
 
+    @Override
     public LiveData<Integer> getImageUploadProgress(){
         return imageUploadProgressLiveData;
     }
@@ -231,8 +259,13 @@ public class TicketDetailViewModel extends AndroidViewModel {
     }
 
 
-    public void uploadImages(List<Uri> selectedPictures) {
-        FirebaseUtils.uploadTicketImages(selectedPictures, this);
+//    public void uploadImages(List<Uri> selectedPictures) {
+//        FirebaseUtils.uploadTicketImages(selectedPictures, this);
+//    }
+    @SuppressWarnings("unchecked")
+    @Override
+    public void uploadImages(@NotNull List<? extends Uri> selectedPictures) {
+        FirebaseUtils.uploadTicketImages((List<Uri>) selectedPictures, this);
     }
 
     public void refreshTicket() {

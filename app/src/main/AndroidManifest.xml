@@ -15,14 +15,21 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ui.ClosedTicketActivity"
+        <activity android:name=".ui.client_view.CustomerHomeActivity"
             android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.ClosedTicketActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.CustomerDetailActivity"
             android:label="@string/title_activity_customer_detail"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.CustomerListActivity"
             android:label="@string/title_activity_customer_list"
@@ -37,14 +44,12 @@
             android:name=".ui.TicketDetailActivity"
             android:label="@string/title_activity_ticket_detail"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.MainActivity"
+        <activity
+            android:name=".ui.TicketListActivity"
             android:theme="@style/AppTheme.Launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
+
         <service
             android:name=".service.FirebaseService"
             android:exported="false">
@@ -52,6 +57,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_ball" />

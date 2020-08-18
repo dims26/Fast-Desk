@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.dims.fastdesk.models.Customer
 import com.dims.fastdesk.models.Ticket
-import com.dims.fastdesk.ui.MainActivity
+import com.dims.fastdesk.ui.TicketListActivity
 
 class ViewModelFactory @JvmOverloads constructor(val application: Application, val activity: Activity = Activity(),
                        val ticket: Ticket = Ticket(), val customer: Customer = Customer()) : ViewModelProvider.Factory {
@@ -15,8 +15,8 @@ class ViewModelFactory @JvmOverloads constructor(val application: Application, v
         @Suppress("unchecked_cast")
         return when{
             modelClass.isAssignableFrom(NewTicketViewModel::class.java)  -> NewTicketViewModel(application)
-            modelClass.isAssignableFrom(TicketsViewModel::class.java) &&
-                    activity::class.java.toString() == MainActivity::class.java.toString() -> TicketsViewModel(activity)
+            modelClass.isAssignableFrom(TicketsListViewModel::class.java) &&
+                    activity::class.java.toString() == TicketListActivity::class.java.toString() -> TicketsListViewModel(activity)
             modelClass.isAssignableFrom(TicketDetailViewModel::class.java) &&
                     ticket.id != null -> TicketDetailViewModel(application, ticket)
             modelClass.isAssignableFrom(CustomerTicketsViewModel::class.java) &&

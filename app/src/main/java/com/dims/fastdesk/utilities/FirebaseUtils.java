@@ -1,13 +1,13 @@
 package com.dims.fastdesk.utilities;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModel;
 import androidx.paging.PageKeyedDataSource;
 
@@ -15,11 +15,12 @@ import com.dims.fastdesk.datasource.CustomerDataSource;
 import com.dims.fastdesk.datasource.TicketDataSource;
 import com.dims.fastdesk.models.Customer;
 import com.dims.fastdesk.models.Ticket;
+import com.dims.fastdesk.ui.client_view.home.HomeViewModel;
 import com.dims.fastdesk.viewmodels.ClosedTicketsViewModel;
 import com.dims.fastdesk.viewmodels.CustomerTicketsViewModel;
 import com.dims.fastdesk.viewmodels.NewTicketViewModel;
 import com.dims.fastdesk.viewmodels.TicketDetailViewModel;
-import com.dims.fastdesk.viewmodels.TicketsViewModel;
+import com.dims.fastdesk.viewmodels.TicketsListViewModel;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -52,7 +53,6 @@ import java.util.Map;
 
 public class FirebaseUtils {
 
-
     private static FirebaseAuth mFirebaseAuth;
     private static FirebaseUtils mFirebaseUtils;
     private static FirebaseAuth.AuthStateListener mAuthListener;
@@ -72,7 +72,7 @@ public class FirebaseUtils {
                 @Override
                 public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                     if (firebaseAuth.getCurrentUser() == null) {
-                        signIn(callerActivity);
+                        callerActivity.startActivityForResult(getSignInIntent(), RC_SIGN_IN);
                     }
                     String userId = firebaseAuth.getUid();
 //                    checkAdmin(userId);
@@ -89,16 +89,17 @@ public class FirebaseUtils {
         mCustomerStorageReference = mFirebaseStorage.getReference().child("customer_store");
     }
 
-    public static void signIn(Activity caller){
+    public static Intent getSignInIntent(){
         //select providers
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.EmailBuilder().setAllowNewAccounts(false).build()
         );
-        caller.startActivityForResult(AuthUI.getInstance()
+
+        return AuthUI.getInstance()
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
                 .setIsSmartLockEnabled(false)
-                .build(), RC_SIGN_IN);
+                .build();
     }
 
     public static void pullStaffTicketsDataSource(final PageKeyedDataSource.LoadInitialCallback<Query, Ticket> initialCallback,
@@ -599,10 +600,10 @@ public class FirebaseUtils {
                             return;
                         }
 
-                        if (viewModel instanceof TicketsViewModel){//safe against null viewModel
+                        if (viewModel instanceof TicketsListViewModel){//safe against null viewModel
                             //invalidate the current DataSource result
-                            TicketsViewModel ticketsViewModel = (TicketsViewModel) viewModel;
-                            ticketsViewModel.toggleSortOrder(ticketsViewModel.newerFirst);
+                            TicketsListViewModel ticketsListViewModel = (TicketsListViewModel) viewModel;
+                            ticketsListViewModel.toggleSortOrder(ticketsListViewModel.newerFirst);
                         }else if (viewModel instanceof CustomerTicketsViewModel){//safe against null viewModel
                             //invalidate the current DataSource result
                             CustomerTicketsViewModel customerTicketsViewModel = (CustomerTicketsViewModel) viewModel;
@@ -611,6 +612,10 @@ public class FirebaseUtils {
                             //invalidate the current DataSource result
                             ClosedTicketsViewModel closedTicketsViewModel = (ClosedTicketsViewModel) viewModel;
                             closedTicketsViewModel.toggleSortOrder(closedTicketsViewModel.newerFirst);
+                        }else if (viewModel instanceof HomeViewModel){
+                            HomeViewModel homeViewModel = (HomeViewModel) viewModel;
+                            homeViewModel.toggleSortOrder(homeViewModel.newerFirst);
+                            homeViewModel.setComplaintCountLiveData(value.size());
                         }
                     }
                 });

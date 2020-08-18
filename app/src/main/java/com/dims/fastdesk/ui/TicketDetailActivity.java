@@ -112,7 +112,7 @@ public class TicketDetailActivity extends AppCompatActivity{
                 if (frag != null) {
                     manager.beginTransaction().remove(frag).commit();
                 }
-                NoteInputFragment noteInputFragment =  new NoteInputFragment();
+                NoteInputFragment noteInputFragment =  new NoteInputFragment(ticketDetailViewModel);
                 noteInputFragment.show(manager, "fragment_edit_name");
             }
         });

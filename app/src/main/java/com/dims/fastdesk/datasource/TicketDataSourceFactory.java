@@ -7,9 +7,10 @@ import androidx.lifecycle.ViewModel;
 import androidx.paging.DataSource;
 
 import com.dims.fastdesk.models.Ticket;
+import com.dims.fastdesk.ui.client_view.home.HomeViewModel;
 import com.dims.fastdesk.viewmodels.ClosedTicketsViewModel;
 import com.dims.fastdesk.viewmodels.CustomerTicketsViewModel;
-import com.dims.fastdesk.viewmodels.TicketsViewModel;
+import com.dims.fastdesk.viewmodels.TicketsListViewModel;
 import com.google.firebase.firestore.Query;
 
 public class TicketDataSourceFactory extends DataSource.Factory<Query, Ticket> {
@@ -31,12 +32,14 @@ public class TicketDataSourceFactory extends DataSource.Factory<Query, Ticket> {
         TicketDataSource ticketDataSource = new TicketDataSource(reference, newerFirst);
 
         ticketLiveDataSource.postValue(ticketDataSource);
-        if (viewModel instanceof TicketsViewModel) {
-            ((TicketsViewModel) viewModel).setDataSourceAvailabilityLiveData(true);
+        if (viewModel instanceof TicketsListViewModel) {
+            ((TicketsListViewModel) viewModel).setDataSourceAvailabilityLiveData(true);
         }else if (viewModel instanceof CustomerTicketsViewModel){
             ((CustomerTicketsViewModel) viewModel).setDataSourceAvailabilityLiveData(true);
         }else if (viewModel instanceof ClosedTicketsViewModel){
             ((ClosedTicketsViewModel) viewModel).setDataSourceAvailabilityLiveData(true);
+        }else if (viewModel instanceof HomeViewModel){
+            ((HomeViewModel) viewModel).setDataSourceAvailabilityLiveData(true);
         }
         return ticketDataSource;
     }

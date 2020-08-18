@@ -34,7 +34,7 @@ import com.dims.fastdesk.adapters.TicketListPagedAdapter;
 import com.dims.fastdesk.models.Ticket;
 import com.dims.fastdesk.utilities.FirebaseUtils;
 import com.dims.fastdesk.utilities.NetworkState;
-import com.dims.fastdesk.viewmodels.TicketsViewModel;
+import com.dims.fastdesk.viewmodels.TicketsListViewModel;
 import com.dims.fastdesk.viewmodels.ViewModelFactory;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -50,11 +50,11 @@ import java.util.Objects;
 import static com.dims.fastdesk.utilities.NetworkState.FAILED;
 
 
-public class MainActivity extends AppCompatActivity {
+public class TicketListActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 801;
     private ProgressBar progressBar;
     private TicketListPagedAdapter recyclerAdapter;
-    private TicketsViewModel ticketsViewModel;
+    private TicketsListViewModel ticketsListViewModel;
     private Activity mainActivity = this;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ArrayAdapter dataAdapter;
@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme_NoActionBar);//Transition back to regular theme
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_ticket_list);
 
         //set up actionbar spinner
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -80,23 +80,23 @@ public class MainActivity extends AppCompatActivity {
         ticketRecyclerView.setAdapter(recyclerAdapter);
 
         if (mAuth.getCurrentUser() == null)
-            FirebaseUtils.signIn(this);
+            startActivityForResult(FirebaseUtils.getSignInIntent(), RC_SIGN_IN);
 
         ViewModelFactory factory = new ViewModelFactory(getApplication(), this);
-        ticketsViewModel = new ViewModelProvider(this, factory).get(TicketsViewModel.class);
+        ticketsListViewModel = new ViewModelProvider(this, factory).get(TicketsListViewModel.class);
 
         //Setup spinner
-        dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, android.R.id.text1, ticketsViewModel.views);
+        dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_item, android.R.id.text1, ticketsListViewModel.views);
         dataAdapter.setDropDownViewResource(R.layout.spinner_list);
         queueSpinner.setAdapter(dataAdapter);
         queueSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (parent.getItemAtPosition(position).equals(TicketsViewModel.ALL_CLOSED_TICKETS)){
+                if (parent.getItemAtPosition(position).equals(TicketsListViewModel.ALL_CLOSED_TICKETS)){
                     Intent intent = new Intent(getApplicationContext(), ClosedTicketActivity.class)
-                            .putExtra("department", ticketsViewModel.views.get(0));
+                            .putExtra("department", ticketsListViewModel.views.get(0));
                     startActivity(intent);
-                }else if (parent.getItemAtPosition(position).equals(TicketsViewModel.CUSTOMER_LIST)){
+                }else if (parent.getItemAtPosition(position).equals(TicketsListViewModel.CUSTOMER_LIST)){
                     Intent intent = new Intent(getApplicationContext(), CustomerListActivity.class);
                     startActivity(intent);
                 }
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             public void onRefresh() {
                 swipeRefreshLayout.setRefreshing(false);
                 //reload tickets with current sort state
-                ticketsViewModel.toggleSortOrder(ticketsViewModel.newerFirst);
+                ticketsListViewModel.toggleSortOrder(ticketsListViewModel.newerFirst);
             }
         });
         //hide drag animation for swipe refresh and show custom progressBar
@@ -135,11 +135,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         queueSpinner.setSelection(0);
-        ticketsViewModel.getPagedListLiveDataAvailable().observe(this, new Observer<Boolean>() {
+        ticketsListViewModel.getPagedListLiveDataAvailable().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean){
-                    ticketsViewModel.ticketPagedListLiveData.observe((LifecycleOwner) mainActivity, new Observer<PagedList<Ticket>>() {
+                    ticketsListViewModel.ticketPagedListLiveData.observe((LifecycleOwner) mainActivity, new Observer<PagedList<Ticket>>() {
                         @Override
                         public void onChanged(PagedList<Ticket> tickets) {
                             recyclerAdapter.submitList(tickets);
@@ -149,12 +149,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ticketsViewModel.getDataSourceAvailabilityLiveData().observe(this, new Observer<Boolean>() {
+        ticketsListViewModel.getDataSourceAvailabilityLiveData().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean){
                     Objects.requireNonNull
-                            (ticketsViewModel.getDataSourceLiveData().getValue())
+                            (ticketsListViewModel.getDataSourceLiveData().getValue())
                             .netStateLiveData
                             .observe((LifecycleOwner) mainActivity, new Observer<Integer>() {
                                 @Override
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        ticketsViewModel.getQueueSpinnerLiveData().observe(this, new Observer<Boolean>() {
+        ticketsListViewModel.getQueueSpinnerLiveData().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean){
@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.main_activity_menu, menu);
 
         //select the right icon to use
-        if (ticketsViewModel.newerFirst)
+        if (ticketsListViewModel.newerFirst)
             menu.findItem(R.id.action_sort).setIcon(R.drawable.ic_sort_newer);
         else
             menu.findItem(R.id.action_sort).setIcon(R.drawable.ic_sort_older);
@@ -218,19 +218,19 @@ public class MainActivity extends AppCompatActivity {
             });
             FirebaseUtils.detachListener();
         }else if (item.getItemId() == R.id.action_sort){
-            boolean ready;
-            if (ticketsViewModel.newerFirst) {
-                ready = ticketsViewModel.toggleSortOrder(false);
-                if (ready)
+            boolean isDataSourceReady;
+            if (ticketsListViewModel.newerFirst) {
+                isDataSourceReady = ticketsListViewModel.toggleSortOrder(false);
+                if (isDataSourceReady)
                     item.setIcon(R.drawable.ic_sort_older);
             }else{
-                ready = ticketsViewModel.toggleSortOrder(true);
-                if (ready)
+                isDataSourceReady = ticketsListViewModel.toggleSortOrder(true);
+                if (isDataSourceReady)
                     item.setIcon(R.drawable.ic_sort_newer);
             }
         }else if (item.getItemId() == R.id.action_refresh){
             //reload tickets with current sort state
-            ticketsViewModel.toggleSortOrder(ticketsViewModel.newerFirst);
+            ticketsListViewModel.toggleSortOrder(ticketsListViewModel.newerFirst);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -254,10 +254,9 @@ public class MainActivity extends AppCompatActivity {
                 //clear preferences
                 SharedPreferences prefs = getApplication().getSharedPreferences("prefs", Context.MODE_PRIVATE);
                 final SharedPreferences.Editor editor = prefs.edit();
-                editor.clear();
-                editor.commit();
-                ticketsViewModel.refresh();
-                ticketsViewModel.views.set(0, "");
+                editor.clear().commit();
+                ticketsListViewModel.refresh();
+                ticketsListViewModel.views.set(0, "");
                 dataAdapter.notifyDataSetChanged();
                 recyclerAdapter.submitList(null);
             }

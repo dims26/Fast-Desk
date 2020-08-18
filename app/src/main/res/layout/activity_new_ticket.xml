@@ -35,7 +35,7 @@
         tools:ignore="LabelFor" />
 
     <TextView
-        android:id="@+id/descriptionTextView"
+        android:id="@+id/brief_textview"
         style="@style/Text"
         android:layout_marginTop="24dp"
         android:text="@string/ticket_description"
@@ -51,9 +51,9 @@
         android:importantForAutofill="no"
         android:inputType="textMultiLine"
         android:maxLines="4"
-        app:layout_constraintBaseline_toBaselineOf="@id/descriptionTextView"
+        app:layout_constraintBaseline_toBaselineOf="@id/brief_textview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/descriptionTextView"
+        app:layout_constraintStart_toEndOf="@id/brief_textview"
         tools:ignore="LabelFor" />
 
     <TextView
