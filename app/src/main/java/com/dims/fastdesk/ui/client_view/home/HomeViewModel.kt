@@ -3,6 +3,7 @@ package com.dims.fastdesk.ui.client_view.home
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,8 +13,12 @@ import com.dims.fastdesk.datasource.TicketDataSource
 import com.dims.fastdesk.datasource.TicketDataSourceFactory
 import com.dims.fastdesk.models.Customer
 import com.dims.fastdesk.models.Ticket
+import com.dims.fastdesk.ui.NoteUpdateInterface
 import com.dims.fastdesk.utilities.FirebaseFunctionUtils
 import com.dims.fastdesk.utilities.FirebaseUtils
+import com.dims.fastdesk.utilities.ImageUploadState
+import com.dims.fastdesk.utilities.NetworkState
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
@@ -24,13 +29,16 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.util.*
+import kotlin.collections.HashMap
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
+class HomeViewModel(application: Application) : AndroidViewModel(application), NoteUpdateInterface {
 
     private val pagedListLiveDataAvailable = MutableLiveData(false)
     private val dataSourceAvailabilityLiveData = MutableLiveData(false)
     private val complaintCountLiveData = MutableLiveData(-1)
     private var fname = ""
+    private var lname = ""
     var greetingText = "Hi $fname"
 
     lateinit var ticketPagedListLiveData: LiveData<PagedList<Ticket>>
@@ -81,7 +89,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.code == 200 && body.isNotEmpty()) {
                     //get reference string
                     val collection: String = extractCustomerInfo(body)
-
                     if (collection == "") {
                         //todo maybe load an error message here, couldn't get name of collection group
                         return
@@ -126,6 +133,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 customer.path = customerPath
 
                 fname = getString(Customer.FNAME)
+                lname = getString(Customer.LNAME)
                 greetingText = "Hi $fname"
             }
 
@@ -149,5 +157,72 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
         listenerRegistration.remove()
         super.onCleared()
+    }
+
+    override lateinit var imageDownloadUriList: List<String>
+    override var noteEntry: MutableMap<String, Any> = HashMap()
+    override fun isTitleVisible(): Boolean = true
+    private val ticketCreatedLiveData = MutableLiveData(NetworkState.IDLE)
+
+    //image upload
+    private val imageUploadProgressLiveData = MutableLiveData(-1)
+    private val imageUploadProgressBarLiveData = MutableLiveData(ImageUploadState.IDLE)
+
+    override fun getImageUploadProgress(): LiveData<Int> = imageUploadProgressLiveData
+
+    override fun getImageUploadProgressBar(): LiveData<Int> = imageUploadProgressBarLiveData
+
+    override fun setImageUploadProgress(progress: Int) {
+        imageUploadProgressLiveData.postValue(progress)
+    }
+
+    override fun setImageUploadProgressBar(progress: Int) {
+        imageUploadProgressBarLiveData.postValue(progress)
+    }
+
+    override fun setTicketCreatedStatus(state: Int) {
+        ticketCreatedLiveData.postValue(state)
+    }
+
+    //todo this is used to know when to clear the variables used to create a ticket, and maybe to notify
+    // that a ticket has been created in your UI code
+    // You already have a listener though, so you might not need to update anyone
+    override fun getTicketCreatedStatus(): LiveData<Int> = ticketCreatedLiveData
+
+    override fun uploadImages(selectedPictures: List<Uri>) {
+        FirebaseUtils.uploadTicketImages(selectedPictures as List<Uri?>, this as NoteUpdateInterface)
+    }
+
+    override fun setNote(updateMap: Map<String, Any>) {
+
+        val data: MutableMap<String, Any> = HashMap()
+
+        //ticket creator information
+        val creator: MutableMap<String, Any> = HashMap()
+        creator[Ticket.CREATOR_FNAME] = fname
+        creator[Ticket.CREATOR_LNAME] = lname
+        creator[Ticket.CREATOR_TIME] = Timestamp(Date())
+
+        //ticket description information
+        val note: MutableMap<String, Any> = java.util.HashMap()
+        note[Ticket.NOTES_BODY] = noteEntry[Ticket.NOTES_BODY] ?: ""
+        note[Ticket.NOTES_AUTHOR] = "$fname $lname"
+        note[Ticket.NOTES_DEPARTMENT] = "customer"
+        with(noteEntry[Ticket.NOTES_IMAGES]){
+            if (this != null)
+                note[Ticket.NOTES_IMAGES] = this
+        }
+
+        val customerRef = FirebaseFirestore.getInstance().document(customer.path)
+
+        data[Ticket.CREATOR] = creator
+        data[Ticket.CUSTOMER] = customerRef
+        data[Ticket.NOTES] = listOf<Map<String, Any>>(note)
+        data[Ticket.PRIORITY] = "LOW"
+        data[Ticket.TITLE] = updateMap["title"] ?: ""
+
+        FirebaseUtils.customerForwardTicket(data, this)
+
+        imageDownloadUriList = listOf()
     }
 }

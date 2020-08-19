@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Process
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,15 +17,19 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dims.fastdesk.R
 import com.dims.fastdesk.adapters.TicketListPagedAdapter
+import com.dims.fastdesk.ui.NoteInputFragment
+import com.dims.fastdesk.ui.NoteUpdateInterface
 import com.dims.fastdesk.utilities.FirebaseUtils
 import com.dims.fastdesk.utilities.NetworkState
 import com.firebase.ui.auth.IdpResponse
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 
 class HomeFragment : Fragment() {
@@ -112,6 +115,19 @@ class HomeFragment : Fragment() {
             }
         })
 
+        viewModel.getTicketCreatedStatus().observe(viewLifecycleOwner, Observer {
+            when(it){
+                NetworkState.SUCCESS -> { viewModel.noteEntry.clear() }
+                NetworkState.LOADING -> {/*do nothing*/}
+                NetworkState.FAILED -> {
+                    viewModel.noteEntry.clear()
+                    Snackbar.make(requireView(), "Couldn't create ticket.Try again",
+                            Snackbar.LENGTH_INDEFINITE
+                    ).setAction("DISMISS") {}.show()
+                }
+            }
+        })
+
         greetingTextView.text = viewModel.greetingText
         viewModel.getComplaintCountLiveData().observe(viewLifecycleOwner, Observer {count ->
             if (count >= 0){
@@ -133,9 +149,17 @@ class HomeFragment : Fragment() {
             prefs.edit().clear().apply()
             mAuth.signOut()
             recyclerAdapter.submitList(null)
+            briefTextView.text = ""
         }
         editDetailButton.setOnClickListener {  }
-        complaintButton.setOnClickListener {  }
+        complaintButton.setOnClickListener {
+            val frag = childFragmentManager.findFragmentByTag("fragment_edit_name")
+            if (frag != null) {
+                childFragmentManager.beginTransaction().remove(frag).commit()
+            }
+            val noteInputFragment = NoteInputFragment(viewModel as NoteUpdateInterface)
+            noteInputFragment.show(childFragmentManager, "fragment_edit_name")
+        }
     }
 
     private fun attachAuthListener(auth: FirebaseAuth){
@@ -162,7 +186,6 @@ class HomeFragment : Fragment() {
                 val prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE)
                 val editor = prefs.edit()
                 editor.clear().commit()
-                recyclerAdapter.submitList(null)//todo put this in logout completed block
                 //get viewmodel to retrieve ticket info
                 viewModel.load()
             }

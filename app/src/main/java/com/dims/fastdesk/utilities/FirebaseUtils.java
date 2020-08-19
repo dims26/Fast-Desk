@@ -7,7 +7,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModel;
 import androidx.paging.PageKeyedDataSource;
 
@@ -15,6 +14,7 @@ import com.dims.fastdesk.datasource.CustomerDataSource;
 import com.dims.fastdesk.datasource.TicketDataSource;
 import com.dims.fastdesk.models.Customer;
 import com.dims.fastdesk.models.Ticket;
+import com.dims.fastdesk.ui.NoteUpdateInterface;
 import com.dims.fastdesk.ui.client_view.home.HomeViewModel;
 import com.dims.fastdesk.viewmodels.ClosedTicketsViewModel;
 import com.dims.fastdesk.viewmodels.CustomerTicketsViewModel;
@@ -50,13 +50,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class FirebaseUtils {
 
     private static FirebaseAuth mFirebaseAuth;
-    private static FirebaseUtils mFirebaseUtils;
     private static FirebaseAuth.AuthStateListener mAuthListener;
     private static final int RC_SIGN_IN = 801;
+    private static final String TICKET_STORE = "ticket_store";
     private static Query.Direction direction = Query.Direction.DESCENDING;
     private static StorageReference mTicketStorageReference;
     private static StorageReference mCustomerStorageReference;
@@ -64,8 +65,6 @@ public class FirebaseUtils {
     private FirebaseUtils(){ }
 
     public static synchronized void openFirebaseReference(final Activity callerActivity){
-        if (mFirebaseUtils == null) {
-            mFirebaseUtils = new FirebaseUtils();
             mFirebaseAuth = FirebaseAuth.getInstance();
             //listener, if attached to FirebaseAuth, will call the sign in page if user isn't logged in
             mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -78,14 +77,18 @@ public class FirebaseUtils {
 //                    checkAdmin(userId);
                 }
             };
-        }
 
         connectStorage();
     }
 
+    public static void initNoLogin(){
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mTicketStorageReference = FirebaseStorage.getInstance().getReference().child(TICKET_STORE);
+    }
+
     private static void connectStorage(){
         FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
-        mTicketStorageReference = mFirebaseStorage.getReference().child("ticket_store");
+        mTicketStorageReference = mFirebaseStorage.getReference().child(TICKET_STORE);
         mCustomerStorageReference = mFirebaseStorage.getReference().child("customer_store");
     }
 
@@ -479,31 +482,50 @@ public class FirebaseUtils {
                 });
     }
 
-    public static void updateTicket(Ticket ticket, Map<String, Object> updateMap, final TicketDetailViewModel ticketDetailViewModel) {
-        FirebaseFirestore.getInstance().document(ticket.getPath())
-                .update(updateMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
+    public static void customerForwardTicket(Map<String, Object> data, final NoteUpdateInterface updater){
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("departments/support/tickets")
+                .add(data)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
-                        ticketDetailViewModel.setTicketCreatedStatus(NetworkState.SUCCESS);
+                    public void onSuccess(DocumentReference documentReference) {
+                        updater.setTicketCreatedStatus(NetworkState.SUCCESS);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        ticketDetailViewModel.setTicketCreatedStatus(NetworkState.FAILED);
+                        updater.setTicketCreatedStatus(NetworkState.FAILED);
                     }
                 });
     }
 
-    public static void uploadTicketImages( final List<Uri> selectedPictures, final TicketDetailViewModel ticketDetailViewModel) {
+    public static void updateTicket(Ticket ticket, Map<String, Object> updateMap, final NoteUpdateInterface updater) {
+        FirebaseFirestore.getInstance().document(ticket.getPath())
+                .update(updateMap)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        updater.setTicketCreatedStatus(NetworkState.SUCCESS);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        updater.setTicketCreatedStatus(NetworkState.FAILED);
+                    }
+                });
+    }
+
+    public static void uploadTicketImages( final List<Uri> selectedPictures, final NoteUpdateInterface updater) {
         if (selectedPictures == null){
-            ticketDetailViewModel.setImageUploadProgressBar(ImageUploadState.SUCCESS);
+            updater.setImageUploadProgressBar(ImageUploadState.SUCCESS);
             return;
         }
 
-        ticketDetailViewModel.setImageUploadProgressBar(ImageUploadState.LOADING);
-        ticketDetailViewModel.imageDownloadUriList = new ArrayList<>();
+        updater.setImageUploadProgressBar(ImageUploadState.LOADING);
+        updater.setImageDownloadUriList(new ArrayList<String>());
         for (final Uri uri: selectedPictures) {
             final StorageReference storageReference = mTicketStorageReference.child(uri.getLastPathSegment());
             storageReference
@@ -513,20 +535,23 @@ public class FirebaseUtils {
                         public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                             //handle reporting progress
                             int progress = (int) ((100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount());
-                            ticketDetailViewModel.setImageUploadProgress(progress);
-                            ticketDetailViewModel.setImageUploadProgressBar(selectedPictures.indexOf(uri) + 1);
+                            updater.setImageUploadProgress(progress);
+                            updater.setImageUploadProgressBar(selectedPictures.indexOf(uri) + 1);
                         }
                     })
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
                             storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri2) {
-                                    ticketDetailViewModel.imageDownloadUriList.add(uri2.toString());
+                                    List<String> newList = updater.getImageDownloadUriList();
+                                    newList.add(uri2.toString());
+                                    updater.setImageDownloadUriList(newList);
 
-                                    if (selectedPictures.indexOf(uri) == (selectedPictures.size() - 1)){
-                                        ticketDetailViewModel.setImageUploadProgressBar(ImageUploadState.SUCCESS);
+                                    if (selectedPictures.indexOf(uri) == (selectedPictures.size() - 1) &&
+                                            !Objects.equals(updater.getImageUploadProgressBar().getValue(), ImageUploadState.SUCCESS)){
+                                        updater.setImageUploadProgressBar(ImageUploadState.SUCCESS);
                                     }
                                 }
                             });

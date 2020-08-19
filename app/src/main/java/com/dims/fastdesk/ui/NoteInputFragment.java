@@ -35,6 +35,7 @@ import com.dims.fastdesk.R;
 import com.dims.fastdesk.models.Ticket;
 import com.dims.fastdesk.utilities.ImageUploadState;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FieldValue;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -55,7 +56,8 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
     private NoteUpdateInterface updater;
     private static final int REQUEST_CODE_CHOOSE = 442;
     private static final int MY_PERMISSIONS_REQUEST_READ_STORAGE = 433;
-    private TextInputEditText mEditText;
+    private TextInputEditText mNoteEditText, mTitleEditText;
+    private TextInputLayout mTitleInputLayout;
     private ImageButton attachmentButton;
     private Button submitButton;
     private List<Uri> mSelected;
@@ -70,7 +72,9 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_input_note, container);
-        mEditText = view.findViewById(R.id.noteEditText);
+        mNoteEditText = view.findViewById(R.id.noteEditText);
+        mTitleEditText = view.findViewById(R.id.titleEditText);
+        mTitleInputLayout = view.findViewById(R.id.titleTextField);
         submitButton = view.findViewById(R.id.submitButton);
         attachmentButton = view.findViewById(R.id.attachmentButton);
         progressLayout = view.findViewById(R.id.progressLayout);
@@ -82,6 +86,9 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         submitButton.setOnClickListener(this);
         attachmentButton.setOnClickListener(this);
         progressLayout.setVisibility(View.GONE);
+
+        if(updater.isTitleVisible()) mTitleInputLayout.setVisibility(View.VISIBLE);
+        else mTitleInputLayout.setVisibility(View.GONE);
 
         ids = Arrays.asList(R.id.imageView1, R.id.imageView2, R.id.imageView3);
 
@@ -112,7 +119,9 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
             public void onChanged(Integer integer) {
                 if (integer.equals(ImageUploadState.SUCCESS)){
                     //upload ticket
-                    updateTicket();
+                    if (!updater.getImageDownloadUriList().isEmpty()){
+                        updateTicket();
+                    }
                 }else if (integer.equals(ImageUploadState.LOADING)){
                     progressLayout.setVisibility(View.VISIBLE);
                     determinateProgressBar.setProgress(0);
@@ -143,10 +152,10 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.submitButton:
-                if (!mEditText.getText().toString().trim().isEmpty()) {
+                if (!mNoteEditText.getText().toString().trim().isEmpty()) {
                     submitButton.setEnabled(false);
                     attachmentButton.setEnabled(false);
-                    mEditText.setEnabled(false);
+                    mNoteEditText.setEnabled(false);
                     uploadImages();
                 }
                 break;
@@ -205,11 +214,14 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
 
         //ticket description information
         Map<String, Object> content = new HashMap<>();
-        content.put(Ticket.NOTES_BODY, mEditText.getText().toString());
+        content.put(Ticket.NOTES_BODY, mNoteEditText.getText().toString());
         content.put(Ticket.NOTES_AUTHOR, creatorFName + " " + creatorLName);
         content.put(Ticket.NOTES_DEPARTMENT, creatorDepartment.toLowerCase());
         if (!mSelected.isEmpty()) {
             content.put(Ticket.NOTES_IMAGES, updater.getImageDownloadUriList());
+        }
+        if (updater.isTitleVisible()){
+            note.put("title", mTitleEditText.getText().toString());
         }
 
         note.put(Ticket.NOTES, FieldValue.arrayUnion(content));
@@ -219,7 +231,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         updater.setImageUploadProgressBar(ImageUploadState.IDLE);//important
 
         updater.setNoteEntry(content);
-        updater.updateTicket(note);
+        updater.setNote(note);
 
         this.dismiss();
     }

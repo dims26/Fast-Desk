@@ -378,7 +378,7 @@ public class TicketDetailActivity extends AppCompatActivity{
                 updateMap.put(TicketDetailViewModel.PRIORITY_UPDATE_KEY, ticketDetailViewModel.ticket.getPriority());
 
                 ticketDetailViewModel.noteEntry = content;
-                ticketDetailViewModel.updateTicket(updateMap);
+                ticketDetailViewModel.setNote(updateMap);
             }
         });
         // create and show the alert dialog

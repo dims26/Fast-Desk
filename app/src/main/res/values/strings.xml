@@ -55,4 +55,5 @@
     <string name="error_message">Error loading items</string>
     <string name="empty_message">No open issues</string>
     <string name="permission_rationale">Permission required to access media on device</string>
+    <string name="title_hint">Input title</string>
 </resources>

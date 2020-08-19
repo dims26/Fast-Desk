@@ -12,6 +12,7 @@ import com.dims.fastdesk.models.Ticket;
 import com.dims.fastdesk.ui.NoteUpdateInterface;
 import com.dims.fastdesk.utilities.FirebaseFunctionUtils;
 import com.dims.fastdesk.utilities.FirebaseUtils;
+import com.dims.fastdesk.utilities.ImageUploadState;
 import com.dims.fastdesk.utilities.MoveTicketState;
 import com.dims.fastdesk.utilities.NetworkState;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -50,12 +51,15 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     private MutableLiveData<Integer> moveTicketLiveData = new MutableLiveData<>(MoveTicketState.IDLE);
     //image upload
     private MutableLiveData<Integer> imageUploadProgressLiveData = new MutableLiveData<>(-1);
-    private MutableLiveData<Integer> imageUploadProgressBarLiveData = new MutableLiveData<>(-3);
+    private MutableLiveData<Integer> imageUploadProgressBarLiveData = new MutableLiveData<>(ImageUploadState.IDLE);
 
     TicketDetailViewModel(@NonNull Application application, Ticket ticket) {
         super(application);
         this.ticket = ticket;
     }
+
+    @Override
+    public boolean isTitleVisible() { return false; }
 
     @NotNull
     @Override
@@ -70,7 +74,8 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     @SuppressWarnings("unchecked")
     @Override
-    public void setNoteEntry(@NotNull Map<String, ?> noteEntry) { this.noteEntry = (Map<String, Object>) noteEntry; }
+    public void setNoteEntry(@NotNull Map<String, Object> noteEntry) { this.noteEntry = noteEntry; }
+
 
 //    public void updateTicket(Map<String, Object> updateMap) {
 //        setTicketCreatedStatus(NetworkState.LOADING);
@@ -78,20 +83,29 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 //    }todo make sure this works when testing staff module
     @SuppressWarnings("unchecked")
     @Override
-    public void updateTicket(@NotNull Map<String, ?> updateMap) {
+    public void setNote(@NotNull Map<String, ?> updateMap) {
         setTicketCreatedStatus(NetworkState.LOADING);
         FirebaseUtils.updateTicket(ticket, (Map<String, Object>) updateMap, this);
+        setImageDownloadUriList(new ArrayList<String>() {
+        });
     }
 
     public void setDepartmentLiveData(Integer integer){
         departmentLiveData.postValue(integer);
     }
 
-    public void setTicketCreatedStatus(Integer status) {
+    @Override
+    public void setTicketCreatedStatus(int status) {
         ticketCreatedLiveData.postValue(status);
     }
 
-    public void setImageUploadProgress(Integer progress){
+    @Override
+    public LiveData<Integer> getTicketCreatedStatus() {
+        return ticketCreatedLiveData;
+    }
+
+    @Override
+    public void setImageUploadProgress(int progress) {
         imageUploadProgressLiveData.postValue(progress);
     }
 
@@ -123,10 +137,6 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     public LiveData<Integer> getMoveState(){
         return moveTicketLiveData;
-    }
-
-    public LiveData<Integer> getTicketCreatedStatus() {
-        return ticketCreatedLiveData;
     }
 
     public LiveData<Integer> getDepartmentsLiveData() {
@@ -271,4 +281,6 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     public void refreshTicket() {
         FirebaseUtils.refreshTicket(ticket.getPath(), this);
     }
+
+
 }
