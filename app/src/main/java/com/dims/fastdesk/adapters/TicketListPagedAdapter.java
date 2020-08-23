@@ -24,6 +24,21 @@ public class TicketListPagedAdapter extends PagedListAdapter<Ticket, TicketListP
     }
     public boolean isClosedTicket = false;
     public boolean isFromCustomerDetail = false;
+    private ClickNotifier notifier;
+
+    /**
+     * Notifier interface allowing UI classes wishing to handle item click
+     * events to register and receive the data on recycler click event.
+     */
+    public interface ClickNotifier {
+        void onTicketSelected(Ticket t);
+    }
+
+    public void registerForNotification(ClickNotifier notifier){
+        this.notifier = notifier;
+    }
+
+
 
     @NonNull
     @Override
@@ -50,6 +65,12 @@ public class TicketListPagedAdapter extends PagedListAdapter<Ticket, TicketListP
         holder.ticketView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //if the associated UI activity registered to handle item click events
+                if (notifier != null){
+                    //forward the ticket to them
+                    notifier.onTicketSelected(ticket);
+                    return;
+                }
                 Intent intent = new Intent(v.getContext(), TicketDetailActivity.class);
                 intent.putExtra("ticket", ticket);
                 if (isClosedTicket) intent.putExtra("isClosedTicket", true);

@@ -20,7 +20,7 @@
             android:id="@+id/ticketImageContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
+            android:visibility="visible"
             app:justifyContent="space_around">
 
             <ImageView

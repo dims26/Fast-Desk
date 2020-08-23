@@ -586,13 +586,11 @@ public class FirebaseUtils {
                                                         documentSnapshot.getString("fname")
                                                                 + " "
                                                                 + documentSnapshot.getString("lname"));
-                                                ticketDetailViewModel.ticket = ticket;
-                                                ticketDetailViewModel.setTicketUpdatedStatus(NetworkState.SUCCESS);
                                             }else{
                                                 ticket.setCustomerName("No customer");
-                                                ticketDetailViewModel.ticket = ticket;
-                                                ticketDetailViewModel.setTicketUpdatedStatus(NetworkState.SUCCESS);
                                             }
+                                            ticketDetailViewModel.ticket = ticket;
+                                            ticketDetailViewModel.setTicketUpdatedStatus(NetworkState.SUCCESS);
                                         }
                                     }).addOnFailureListener(new OnFailureListener() {
                                 @Override
@@ -644,6 +642,28 @@ public class FirebaseUtils {
                         }
                     }
                 });
+    }
+
+    public static ListenerRegistration ticketListener(final DocumentReference reference, final ViewModel viewModel) {
+        return reference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.e("ticketListener()", "ticket Listen error", e);
+                    return;
+                }
+
+                if (viewModel instanceof TicketDetailViewModel){
+                    TicketDetailViewModel ticketDetailViewModel = (TicketDetailViewModel) viewModel;
+                    if (documentSnapshot.getData() == null) {
+                        ticketDetailViewModel.setTicketUpdatedStatus(NetworkState.NOT_FOUND);
+                        return;
+                    }
+                    extractTicketData(documentSnapshot, ticketDetailViewModel.ticket);
+                    ticketDetailViewModel.setTicketUpdatedStatus(NetworkState.SUCCESS);
+                }
+            }
+        });
     }
 
     private static class GetQuery {

@@ -217,7 +217,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
 
         data[Ticket.CREATOR] = creator
         data[Ticket.CUSTOMER] = customerRef
-        data[Ticket.NOTES] = listOf<Map<String, Any>>(note)
+        data[Ticket.NOTES] = listOf<Map<String, Any>>(note)// initial entry in notes array
         data[Ticket.PRIORITY] = "LOW"
         data[Ticket.TITLE] = updateMap["title"] ?: ""
 

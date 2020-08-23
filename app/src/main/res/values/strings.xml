@@ -56,4 +56,6 @@
     <string name="empty_message">No open issues</string>
     <string name="permission_rationale">Permission required to access media on device</string>
     <string name="title_hint">Input title</string>
+    <string name="hyphen_separator">-</string>
+    <string name="send_button_content_description">send button</string>
 </resources>

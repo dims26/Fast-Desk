@@ -17,9 +17,9 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.NavHostFragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dims.fastdesk.R
@@ -51,14 +51,25 @@ class HomeFragment : Fragment() {
     private lateinit var mAuthListener: FirebaseAuth.AuthStateListener
     private lateinit var viewModel: HomeViewModel
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        //sign in if not yet signed in
+        mAuth = FirebaseAuth.getInstance()
+        attachAuthListener(mAuth)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        //sign in if not yet signed in
-        mAuth = FirebaseAuth.getInstance()
-        attachAuthListener(mAuth)
+        // register to handle loading the next screen on recycler item click
+        recyclerAdapter.registerForNotification {
+            val action =
+                    HomeFragmentDirections.actionHomeFragmentToComplaintDetailFragment(it)
+            NavHostFragment.findNavController(this).navigate(action)
+        }
 
         return view
     }
@@ -138,7 +149,7 @@ class HomeFragment : Fragment() {
         })
         setButtonListeners()
 
-        if (mAuth.currentUser != null)
+        if (mAuth.currentUser != null && viewModel.greetingText.length <= 3)
             viewModel.load()
     }
 

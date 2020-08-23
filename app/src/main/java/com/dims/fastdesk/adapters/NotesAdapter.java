@@ -130,7 +130,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.ViewHolder>{
         };
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder{
+    static class ViewHolder extends RecyclerView.ViewHolder{
 
         private TextView bodyTextView, nameTextView, departmentTextView;
         private FlexboxLayout ticketImageContainer;

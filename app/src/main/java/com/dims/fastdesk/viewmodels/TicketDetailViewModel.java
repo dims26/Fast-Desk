@@ -18,6 +18,10 @@ import com.dims.fastdesk.utilities.NetworkState;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -39,11 +43,12 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     public static final String PRIORITY_UPDATE_KEY = "priority";
     public static final String NOTES_UPDATE_KEY = "notes";
+    private ListenerRegistration listenerRegistration;
 
     public List<String> departments = new ArrayList<>();
 
     public Ticket ticket;
-    public Map<String, Object> noteEntry = new HashMap<>();
+    public Map<String, Object> noteEntryMap = new HashMap<>();
     public List<String> imageDownloadUriList;
     private MutableLiveData<Integer> ticketCreatedLiveData = new MutableLiveData<>(NetworkState.IDLE);
     private MutableLiveData<Integer> ticketUpdatedLiveData = new MutableLiveData<>(NetworkState.IDLE);
@@ -53,9 +58,16 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     private MutableLiveData<Integer> imageUploadProgressLiveData = new MutableLiveData<>(-1);
     private MutableLiveData<Integer> imageUploadProgressBarLiveData = new MutableLiveData<>(ImageUploadState.IDLE);
 
+    public boolean isCustomerView = false;
+
     TicketDetailViewModel(@NonNull Application application, Ticket ticket) {
         super(application);
         this.ticket = ticket;
+    }
+
+    public void registerTicketChangeListener(){
+        listenerRegistration = FirebaseUtils.ticketListener( FirebaseFirestore.getInstance().document(ticket.getPath()),
+                this);
     }
 
     @Override
@@ -70,11 +82,10 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     @NotNull
     @Override
-    public Map<String, Object> getNoteEntry() { return noteEntry; }
+    public Map<String, Object> getNoteEntry() { return noteEntryMap; }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public void setNoteEntry(@NotNull Map<String, Object> noteEntry) { this.noteEntry = noteEntry; }
+    public void setNoteEntry(@NotNull Map<String, Object> noteEntry) { this.noteEntryMap = noteEntry; }
 
 
 //    public void updateTicket(Map<String, Object> updateMap) {
@@ -84,10 +95,34 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     @SuppressWarnings("unchecked")
     @Override
     public void setNote(@NotNull Map<String, ?> updateMap) {
+        if (isCustomerView) {
+            setCustomerNote();
+            return;
+        }
         setTicketCreatedStatus(NetworkState.LOADING);
         FirebaseUtils.updateTicket(ticket, (Map<String, Object>) updateMap, this);
-        setImageDownloadUriList(new ArrayList<String>() {
-        });
+        setImageDownloadUriList(new ArrayList<String>());
+    }
+
+    private void setCustomerNote() {
+        if (listenerRegistration == null) registerTicketChangeListener();
+
+        HashMap<String, Object> data = new HashMap<>();
+
+        HashMap<String, Object> note = new HashMap<>();
+        note.put(Ticket.NOTES_BODY, noteEntryMap.get(Ticket.NOTES_BODY));
+        note.put(Ticket.NOTES_AUTHOR, ticket.getCustomerName());
+        note.put(Ticket.NOTES_DEPARTMENT, "customer");
+        if (noteEntryMap.get(Ticket.NOTES_IMAGES) != null)
+            note.put(Ticket.NOTES_IMAGES, noteEntryMap.get(Ticket.NOTES_IMAGES));
+        setNoteEntry(note);
+
+        data.put(Ticket.NOTES, FieldValue.arrayUnion(note));
+
+
+        setTicketCreatedStatus(NetworkState.LOADING);
+        FirebaseUtils.updateTicket(ticket, data, this);
+        setImageDownloadUriList(new ArrayList<String>());
     }
 
     public void setDepartmentLiveData(Integer integer){
@@ -283,4 +318,9 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     }
 
 
+    @Override
+    protected void onCleared() {
+        listenerRegistration.remove();
+        super.onCleared();
+    }
 }

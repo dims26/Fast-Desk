@@ -166,11 +166,11 @@ public class TicketDetailActivity extends AppCompatActivity{
             public void onChanged(Integer integer) {
                 if (integer.equals(NetworkState.SUCCESS)){
                     loadingPanel.setVisibility(View.GONE);
-                    if (!ticketDetailViewModel.noteEntry.isEmpty()) {
-                        ticketDetailViewModel.ticket.addNotes(new HashMap<>(ticketDetailViewModel.noteEntry));
+                    if (!ticketDetailViewModel.noteEntryMap.isEmpty()) {
+                        ticketDetailViewModel.ticket.addNotes(new HashMap<>(ticketDetailViewModel.noteEntryMap));
                         notesAdapter.updateNotes(new ArrayList<>(ticketDetailViewModel.ticket.getNotes()));
                         notesAdapter.notifyDataSetChanged();
-                        ticketDetailViewModel.noteEntry.clear();
+                        ticketDetailViewModel.noteEntryMap.clear();
                     }
                 }
                 else if (integer.equals(NetworkState.LOADING)) {
@@ -179,7 +179,7 @@ public class TicketDetailActivity extends AppCompatActivity{
                 else if (integer.equals(NetworkState.FAILED)) {
                     loadingPanel.setVisibility(View.GONE);
                     //handle update failure
-                    ticketDetailViewModel.noteEntry.clear();
+                    ticketDetailViewModel.noteEntryMap.clear();
                 }
             }
         });
@@ -377,7 +377,7 @@ public class TicketDetailActivity extends AppCompatActivity{
                 updateMap.put(Ticket.NOTES, FieldValue.arrayUnion(content));
                 updateMap.put(TicketDetailViewModel.PRIORITY_UPDATE_KEY, ticketDetailViewModel.ticket.getPriority());
 
-                ticketDetailViewModel.noteEntry = content;
+                ticketDetailViewModel.noteEntryMap = content;
                 ticketDetailViewModel.setNote(updateMap);
             }
         });
