@@ -20,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,6 +66,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
     private RelativeLayout progressLayout;
     private ProgressBar determinateProgressBar;
     private TextView imageNumberTextView, totalImageCountTextView;
+    private Switch viewSwitch;
 
     public NoteInputFragment(NoteUpdateInterface updater){ this.updater = updater; }
 
@@ -81,14 +83,20 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         determinateProgressBar = view.findViewById(R.id.determinateProgressBar);
         imageNumberTextView = view.findViewById(R.id.imageNumberTextView);
         totalImageCountTextView = view.findViewById(R.id.totalImageCountTextView);
+        viewSwitch = view.findViewById(R.id.view_switch);
         mSelected = new ArrayList<>();
 
         submitButton.setOnClickListener(this);
         attachmentButton.setOnClickListener(this);
         progressLayout.setVisibility(View.GONE);
 
+        //check if title text field should be visible
         if(updater.isTitleVisible()) mTitleInputLayout.setVisibility(View.VISIBLE);
         else mTitleInputLayout.setVisibility(View.GONE);
+
+        //check if customer view switch should be visible
+        if (updater.isViewSwitchVisible()) {viewSwitch.setVisibility(View.VISIBLE);}
+        else {viewSwitch.setVisibility(View.GONE);}
 
         ids = Arrays.asList(R.id.imageView1, R.id.imageView2, R.id.imageView3);
 
@@ -219,6 +227,9 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         content.put(Ticket.NOTES_DEPARTMENT, creatorDepartment.toLowerCase());
         if (!mSelected.isEmpty()) {
             content.put(Ticket.NOTES_IMAGES, updater.getImageDownloadUriList());
+        }
+        if (viewSwitch.getVisibility() == View.VISIBLE){
+            content.put(Ticket.NOTES_CUSTOMER_VISIBLE, viewSwitch.isChecked());
         }
         if (updater.isTitleVisible()){
             note.put("title", mTitleEditText.getText().toString());

@@ -29,7 +29,7 @@ class ClosedTicketsViewModel(application: Application) : AndroidViewModel(applic
     private val ticketDataSourceFactory: TicketDataSourceFactory
 
     val views : MutableList<String> = mutableListOf(ALL_CLOSED_TICKET, CUSTOMER_LIST, "")
-    private val query : Query = FirebaseFirestore.getInstance().collection("general/closed/tickets")
+    private val query : Query = FirebaseFirestore.getInstance().collection("general/closed/closed-tickets")
     init {
         //DataSource to pull ticket data
         ticketDataSourceFactory = TicketDataSourceFactory(query, true, this)

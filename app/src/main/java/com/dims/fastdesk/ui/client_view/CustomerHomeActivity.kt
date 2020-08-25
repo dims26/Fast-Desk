@@ -6,6 +6,9 @@ import com.dims.fastdesk.R
 import com.dims.fastdesk.utilities.FirebaseUtils
 
 class CustomerHomeActivity : AppCompatActivity() {
+    companion object {
+        const val loginType = "customer"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

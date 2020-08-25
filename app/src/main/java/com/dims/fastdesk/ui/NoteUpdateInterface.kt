@@ -9,6 +9,7 @@ interface NoteUpdateInterface {
     var noteEntry: MutableMap<String, Any> //todo has to be initialized in any impl
 
     fun isTitleVisible(): Boolean
+    fun isViewSwitchVisible(): Boolean
     fun getImageUploadProgress(): LiveData<Int>
     fun getImageUploadProgressBar(): LiveData<Int>
     fun setImageUploadProgress(progress: Int)

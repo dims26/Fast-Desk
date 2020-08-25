@@ -15,14 +15,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ui.client_view.CustomerHomeActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".ui.LandingActivity"
+            android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.client_view.CustomerHomeActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.ClosedTicketActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -46,9 +49,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.TicketListActivity"
-            android:theme="@style/AppTheme.Launcher">
-
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <service
             android:name=".service.FirebaseService"

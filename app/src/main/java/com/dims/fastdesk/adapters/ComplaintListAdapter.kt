@@ -41,13 +41,13 @@ class ComplaintListAdapter(private val context: Context, private var notes: Muta
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if(viewType == VIEW_TYPE_MESSAGE_SENT){
             SentMessageHolder(
-            LayoutInflater.from(parent.context)
-                    .inflate(R.layout.sent_message_item, parent, false)
+                    LayoutInflater.from(parent.context)
+                            .inflate(R.layout.sent_message_item, parent, false)
             )
         } else {
             ReceivedMessageHolder(
-            LayoutInflater.from(parent.context)
-                .inflate(R.layout.received_message_item, parent, false)
+                    LayoutInflater.from(parent.context)
+                            .inflate(R.layout.received_message_item, parent, false)
             )
         }
     }
@@ -67,7 +67,9 @@ class ComplaintListAdapter(private val context: Context, private var notes: Muta
 
     fun updateNotes(newNotes: List<Map<String, Any>>) {
         this.notes.clear()
-        this.notes.addAll(newNotes)
+        this.notes.addAll(newNotes.filter {
+            (it[Ticket.NOTES_CUSTOMER_VISIBLE] as Boolean?) == true
+        })
         this.notifyDataSetChanged()
     }
 
@@ -98,17 +100,25 @@ class ComplaintListAdapter(private val context: Context, private var notes: Muta
 
             @Suppress("UNCHECKED_CAST")
             val images = note[Ticket.NOTES_IMAGES] as List<String>?
-            if (!images.isNullOrEmpty()){
+            if (!images.isNullOrEmpty()) {
                 ticketImageContainer.visibility = View.VISIBLE
 
                 images.forEach {
-                    when(images.indexOf(it)){
-                        0 -> { loadInto(it, ticketImage1, 0, images) }
-                        1 -> { loadInto(it, ticketImage2, 1, images) }
-                        2 -> { loadInto(it, ticketImage3, 2, images) }
+                    when (images.indexOf(it)) {
+                        0 -> {
+                            loadInto(it, ticketImage1, 0, images)
+                        }
+                        1 -> {
+                            loadInto(it, ticketImage2, 1, images)
+                        }
+                        2 -> {
+                            loadInto(it, ticketImage3, 2, images)
+                        }
                     }
                 }
-            } else { ticketImageContainer.visibility = View.GONE }
+            } else {
+                ticketImageContainer.visibility = View.GONE
+            }
         }
     }
 
@@ -124,6 +134,7 @@ class ComplaintListAdapter(private val context: Context, private var notes: Muta
         private val ticketImage3: ImageView = itemView.findViewById(R.id.ticketImageView3)
 
         fun bind(note: Map<String, Any>) {
+            itemView.visibility = View.VISIBLE
             bodyTextView.text = note[Ticket.NOTES_BODY] as String?
             nameTextView.text = note[Ticket.NOTES_AUTHOR] as String?
             departmentTextView.text = note[Ticket.NOTES_DEPARTMENT] as String?
@@ -141,6 +152,7 @@ class ComplaintListAdapter(private val context: Context, private var notes: Muta
                     }
                 }
             } else { ticketImageContainer.visibility = View.GONE }
+
         }
     }
 }

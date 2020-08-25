@@ -1,5 +1,6 @@
 package com.dims.fastdesk.ui.client_view.home
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
@@ -13,6 +14,7 @@ import com.dims.fastdesk.datasource.TicketDataSource
 import com.dims.fastdesk.datasource.TicketDataSourceFactory
 import com.dims.fastdesk.models.Customer
 import com.dims.fastdesk.models.Ticket
+import com.dims.fastdesk.ui.LandingActivity
 import com.dims.fastdesk.ui.NoteUpdateInterface
 import com.dims.fastdesk.utilities.FirebaseFunctionUtils
 import com.dims.fastdesk.utilities.FirebaseUtils
@@ -47,6 +49,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
     private var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var customer: Customer
 
+    //Livedata for rejecting login
+    private val badLoginLiveData = MutableLiveData(false)
+
     @JvmField
     var newerFirst: Boolean = true
 
@@ -56,7 +61,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
             FirebaseFunctionUtils.getCustomerData(getTokenResult.token, getTicketsCallback())
         }
     }
-
+    fun getBadLoginLiveData(): LiveData<Boolean> { return badLoginLiveData }
     fun getComplaintCountLiveData(): LiveData<Int> = complaintCountLiveData
     fun getPagedListLiveDataAvailable(): LiveData<Boolean> = pagedListLiveDataAvailable
     fun getDataSourceAvailabilityLiveData(): LiveData<Boolean> = dataSourceAvailabilityLiveData
@@ -82,6 +87,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
                 // todo notify there's a possible network failure, check connection
             }
 
+            @SuppressLint("ApplySharedPref")
             @Throws(IOException::class)
             override fun onResponse(call: Call, response: Response) {
                 //Can't access response.body().string() multiple times, save it in a variable
@@ -110,6 +116,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
                             .build()
                     ticketPagedListLiveData = LivePagedListBuilder(ticketDataSourceFactory, pagedListConfig).build()
                     pagedListLiveDataAvailable.postValue(true)
+                }else if (response.code == 404){
+                    val prefs = getApplication<Application>().getSharedPreferences("prefs", Context.MODE_PRIVATE)
+                    prefs.edit().clear().commit()
+                    badLoginLiveData.postValue(true)
                 }
             }
         }
@@ -161,6 +171,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
 
     override lateinit var imageDownloadUriList: List<String>
     override var noteEntry: MutableMap<String, Any> = HashMap()
+    override fun isViewSwitchVisible(): Boolean = false
     override fun isTitleVisible(): Boolean = true
     private val ticketCreatedLiveData = MutableLiveData(NetworkState.IDLE)
 

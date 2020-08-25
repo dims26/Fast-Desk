@@ -59,6 +59,7 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
     private MutableLiveData<Integer> imageUploadProgressBarLiveData = new MutableLiveData<>(ImageUploadState.IDLE);
 
     public boolean isCustomerView = false;
+    public boolean isViewSwitchVisible = false;
 
     TicketDetailViewModel(@NonNull Application application, Ticket ticket) {
         super(application);
@@ -72,6 +73,11 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     @Override
     public boolean isTitleVisible() { return false; }
+
+    @Override
+    public boolean isViewSwitchVisible() {
+        return isViewSwitchVisible;
+    }
 
     @NotNull
     @Override
@@ -320,7 +326,8 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
 
     @Override
     protected void onCleared() {
-        listenerRegistration.remove();
+        if (listenerRegistration != null)
+            listenerRegistration.remove();
         super.onCleared();
     }
 }

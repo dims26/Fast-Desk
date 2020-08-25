@@ -66,9 +66,8 @@ class ClosedTicketActivity : AppCompatActivity() {
             if (available){
                 ticketsViewModel.getDataSourceLiveData().value!!.netStateLiveData.observe( this, Observer {
                     when(it){
-                        SUCCESS -> progressBar.visibility = View.GONE
+                        SUCCESS, FAILED -> progressBar.visibility = View.GONE
                         LOADING -> progressBar.visibility = View.VISIBLE
-                        FAILED -> progressBar.visibility = View.GONE
                     }
                 })
             }

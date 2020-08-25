@@ -459,6 +459,7 @@ public class FirebaseUtils {
         note.put(Ticket.NOTES_BODY, description);
         note.put(Ticket.NOTES_AUTHOR, creatorFName + " " + creatorLName);
         note.put(Ticket.NOTES_DEPARTMENT, creatorDepartment.toLowerCase());
+        note.put(Ticket.NOTES_CUSTOMER_VISIBLE, true);
 
         data.put(Ticket.CREATOR, creator);
         data.put(Ticket.CUSTOMER, customerReference);

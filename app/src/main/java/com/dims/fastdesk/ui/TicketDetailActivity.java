@@ -74,6 +74,7 @@ public class TicketDetailActivity extends AppCompatActivity{
         ViewModelFactory factory = new ViewModelFactory(getApplication(), new Activity(),
                 (Ticket) intent.getSerializableExtra("ticket"));
         ticketDetailViewModel = new ViewModelProvider(this, factory).get(TicketDetailViewModel.class);
+        ticketDetailViewModel.isViewSwitchVisible = true;
 
         //set title of the toolbar
         getSupportActionBar().setTitle(ticketDetailViewModel.ticket.getId());

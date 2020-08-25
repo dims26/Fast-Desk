@@ -21,6 +21,7 @@ public class Ticket implements Serializable {
     public static final String NOTES_AUTHOR = "author";
     public static final String NOTES_DEPARTMENT = "department";
     public static final String NOTES_IMAGES = "images";
+    public static final String NOTES_CUSTOMER_VISIBLE = "visibleToCustomer";
 
     private Date date;
     private String customerName, title, description, id, priority;

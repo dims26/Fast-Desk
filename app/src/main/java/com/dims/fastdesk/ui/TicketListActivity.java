@@ -38,9 +38,8 @@ import com.dims.fastdesk.viewmodels.TicketsListViewModel;
 import com.dims.fastdesk.viewmodels.ViewModelFactory;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 
@@ -51,18 +50,18 @@ import static com.dims.fastdesk.utilities.NetworkState.FAILED;
 
 
 public class TicketListActivity extends AppCompatActivity {
+    public static String loginType = "staff";
     private static final int RC_SIGN_IN = 801;
     private ProgressBar progressBar;
     private TicketListPagedAdapter recyclerAdapter;
     private TicketsListViewModel ticketsListViewModel;
-    private Activity mainActivity = this;
+    private Activity ticketListActivity = this;
     private SwipeRefreshLayout swipeRefreshLayout;
     private ArrayAdapter dataAdapter;
     private Spinner queueSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme_NoActionBar);//Transition back to regular theme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_list);
 
@@ -139,7 +138,7 @@ public class TicketListActivity extends AppCompatActivity {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean){
-                    ticketsListViewModel.ticketPagedListLiveData.observe((LifecycleOwner) mainActivity, new Observer<PagedList<Ticket>>() {
+                    ticketsListViewModel.ticketPagedListLiveData.observe((LifecycleOwner) ticketListActivity, new Observer<PagedList<Ticket>>() {
                         @Override
                         public void onChanged(PagedList<Ticket> tickets) {
                             recyclerAdapter.submitList(tickets);
@@ -156,7 +155,7 @@ public class TicketListActivity extends AppCompatActivity {
                     Objects.requireNonNull
                             (ticketsListViewModel.getDataSourceLiveData().getValue())
                             .netStateLiveData
-                            .observe((LifecycleOwner) mainActivity, new Observer<Integer>() {
+                            .observe((LifecycleOwner) ticketListActivity, new Observer<Integer>() {
                                 @Override
                                 public void onChanged(Integer integer) {
                                     if (integer.equals(NetworkState.SUCCESS))
@@ -177,6 +176,19 @@ public class TicketListActivity extends AppCompatActivity {
                     getSupportActionBar().setDisplayShowCustomEnabled(true);
                 }
                 dataAdapter.notifyDataSetChanged();
+            }
+        });
+        ticketsListViewModel.getBadLoginLiveData().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean){
+                    Snackbar.make(ticketListActivity.getWindow().getDecorView().getRootView(), "Incorrect Login type",
+                            Snackbar.LENGTH_LONG
+                    ).show();
+                    FirebaseUtils.detachListener();
+                    FirebaseAuth.getInstance().signOut();
+                    finish();
+                }
             }
         });
     }
@@ -209,14 +221,11 @@ public class TicketListActivity extends AppCompatActivity {
                         editor.clear().apply();
                     }
                 });
-            AuthUI.getInstance().signOut(this).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    recyclerAdapter.submitList(null);//clear the recyclerView
-                    FirebaseUtils.attachListener();//listen for user authentication state and act appropriately
-                }
-            });
+            editor.clear().apply();
+            recyclerAdapter.submitList(null);
             FirebaseUtils.detachListener();
+            AuthUI.getInstance().signOut(this);
+            finishAffinity();
         }else if (item.getItemId() == R.id.action_sort){
             boolean isDataSourceReady;
             if (ticketsListViewModel.newerFirst) {
@@ -249,17 +258,27 @@ public class TicketListActivity extends AppCompatActivity {
             if (resultCode != RESULT_OK){
                 //The user has pressed the back button or some other error
                 Log.d("Log In Issue", response.getError().toString());
-                finish();
+                close();
             }else{
                 //clear preferences
                 SharedPreferences prefs = getApplication().getSharedPreferences("prefs", Context.MODE_PRIVATE);
                 final SharedPreferences.Editor editor = prefs.edit();
                 editor.clear().commit();
+                editor.putString(LandingActivity.login, loginType).apply();
                 ticketsListViewModel.refresh();
                 ticketsListViewModel.views.set(0, "");
                 dataAdapter.notifyDataSetChanged();
                 recyclerAdapter.submitList(null);
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        close();
+    }
+
+    private void close(){
+        finishAffinity();
     }
 }

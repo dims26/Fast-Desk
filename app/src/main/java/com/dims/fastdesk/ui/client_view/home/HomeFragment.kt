@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.activity.addCallback
 import androidx.core.app.ActivityCompat.finishAffinity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,8 +25,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dims.fastdesk.R
 import com.dims.fastdesk.adapters.TicketListPagedAdapter
+import com.dims.fastdesk.ui.LandingActivity
 import com.dims.fastdesk.ui.NoteInputFragment
 import com.dims.fastdesk.ui.NoteUpdateInterface
+import com.dims.fastdesk.ui.client_view.CustomerHomeActivity
 import com.dims.fastdesk.utilities.FirebaseUtils
 import com.dims.fastdesk.utilities.NetworkState
 import com.firebase.ui.auth.IdpResponse
@@ -57,6 +60,7 @@ class HomeFragment : Fragment() {
         //sign in if not yet signed in
         mAuth = FirebaseAuth.getInstance()
         attachAuthListener(mAuth)
+        requireActivity().onBackPressedDispatcher.addCallback(this) { close() }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -139,6 +143,17 @@ class HomeFragment : Fragment() {
             }
         })
 
+        viewModel.getBadLoginLiveData().observe(viewLifecycleOwner, Observer {
+            if (it){
+                Snackbar.make(requireActivity().window.decorView.rootView, "Incorrect Login type",
+                        Snackbar.LENGTH_LONG
+                ).show()
+                mAuth.removeAuthStateListener(mAuthListener)
+                mAuth.signOut()
+                close()
+            }
+        })
+
         greetingTextView.text = viewModel.greetingText
         viewModel.getComplaintCountLiveData().observe(viewLifecycleOwner, Observer {count ->
             if (count >= 0){
@@ -158,9 +173,11 @@ class HomeFragment : Fragment() {
             //unsubscribe from department notifications
             val prefs: SharedPreferences = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE)
             prefs.edit().clear().apply()
-            mAuth.signOut()
             recyclerAdapter.submitList(null)
             briefTextView.text = ""
+            mAuth.removeAuthStateListener(mAuthListener)
+            mAuth.signOut()
+            requireActivity().finishAffinity()
         }
         editDetailButton.setOnClickListener {  }
         complaintButton.setOnClickListener {
@@ -181,6 +198,10 @@ class HomeFragment : Fragment() {
         auth.addAuthStateListener(mAuthListener)
     }
 
+    private fun close(){
+        finishAffinity(requireActivity())
+    }
+
     @SuppressLint("ApplySharedPref")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -189,14 +210,13 @@ class HomeFragment : Fragment() {
             if (resultCode != Activity.RESULT_OK) {
                 //The user has pressed the back button or some other error
                 Log.d("Log In Issue", response!!.error.toString())
-                //todo test and choose one, also move these to a single function serving here and back press
-                finishAffinity(requireActivity())
-//                Process.killProcess(Process.myPid())
+                close()
             } else {
                 //clear preferences
                 val prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE)
-                val editor = prefs.edit()
+                val editor =prefs.edit()
                 editor.clear().commit()
+                editor.putString(LandingActivity.login, CustomerHomeActivity.loginType).apply()
                 //get viewmodel to retrieve ticket info
                 viewModel.load()
             }

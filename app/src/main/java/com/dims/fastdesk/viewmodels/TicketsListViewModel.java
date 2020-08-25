@@ -1,5 +1,6 @@
 package com.dims.fastdesk.viewmodels;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import androidx.paging.PagedList;
 import com.dims.fastdesk.datasource.TicketDataSource;
 import com.dims.fastdesk.datasource.TicketDataSourceFactory;
 import com.dims.fastdesk.models.Ticket;
+import com.dims.fastdesk.ui.LandingActivity;
 import com.dims.fastdesk.utilities.FirebaseFunctionUtils;
 import com.dims.fastdesk.utilities.FirebaseUtils;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -49,6 +51,9 @@ public class TicketsListViewModel extends AndroidViewModel {
     private MutableLiveData<Boolean> pagedListLiveDataAvailable = new MutableLiveData<>(false);
     private MutableLiveData<Boolean> dataSourceAvailabilityLiveData = new MutableLiveData<>(false);
 
+    //Livedata for rejecting login
+    private MutableLiveData<Boolean> badLoginLiveData = new MutableLiveData<>(false);
+
     //Livedata for view information
     private MutableLiveData<Boolean> queueSpinnerLiveData = new MutableLiveData<>(false);
 
@@ -79,8 +84,16 @@ public class TicketsListViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        listenerRegistration.remove();
+        removeListener();
         super.onCleared();
+    }
+
+    public void removeListener() {
+        listenerRegistration.remove();
+    }
+
+    public LiveData<Boolean> getBadLoginLiveData() {
+        return badLoginLiveData;
     }
 
     public LiveData<Boolean> getPagedListLiveDataAvailable(){
@@ -103,6 +116,7 @@ public class TicketsListViewModel extends AndroidViewModel {
                 refresh();
             }
 
+            @SuppressLint("ApplySharedPref")
             @Override
             public void onResponse(@NotNull Call call, @NotNull final Response response) throws IOException {
                 //Can't access response.body().string() multiple times, OkHttp doesn't keep a reference to
@@ -127,6 +141,10 @@ public class TicketsListViewModel extends AndroidViewModel {
                             .build();
                     ticketPagedListLiveData = new LivePagedListBuilder<>(ticketDataSourceFactory, pagedListConfig).build();
                     pagedListLiveDataAvailable.postValue(true);
+                }else if (response.code() == 404){
+                    SharedPreferences prefs = getApplication().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+                    prefs.edit().clear().commit();
+                    badLoginLiveData.postValue(true);
                 }
             }
         };
@@ -182,7 +200,8 @@ public class TicketsListViewModel extends AndroidViewModel {
         if (ticketDataSourceFactory != null) {
             this.newerFirst = newerFirst;
             ticketDataSourceFactory.newerFirst = newerFirst;
-            ticketPagedListLiveData.getValue().getDataSource().invalidate();
+            if(ticketPagedListLiveData.getValue() != null)
+                ticketPagedListLiveData.getValue().getDataSource().invalidate();
             return true;
         }
         return false;
