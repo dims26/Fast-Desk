@@ -93,7 +93,7 @@ Android Issue management client following MVVM pattern with back-end implemented
   </td>
  </tr>
  <tr>
-  <td>View all customer's complaints.</td>
+  <td>View customer's complaints.</td>
   <td>Create new complaint.</td>
   <td>View resolution progress.</td>
   <td>Communicate with staff</td>
