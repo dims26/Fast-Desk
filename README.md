@@ -14,6 +14,7 @@ Android Issue management client following MVVM pattern with back-end implemented
 * Notifications on events
 
 ## Screens
+#### Staff Module
 <table border="0">
  <tr>
     <td><b style="font-size:30px">Queue view</b></td>
@@ -68,6 +69,36 @@ Android Issue management client following MVVM pattern with back-end implemented
   <td>Closed ticket detail view.</td>
  </tr>
 </table>
+
+#### Client Module
+<table border="0">
+ <tr>
+    <td><b style="font-size:30px">Home View</b></td>
+    <td><b style="font-size:30px">Create Complaint</b></td>
+    <td><b style="font-size:30px">Complaint Detail</b></td>
+    <td><b style="font-size:30px">Add Note</b></td>
+ </tr>
+ <tr>
+    <td>
+     <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-home-overlay.png width="180" height="320" />
+   </td>
+   <td>
+    <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-new-complaint-overlay.png width="180" height="320" />
+  </td>
+   <td>
+    <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-detail-overlay.png width="180" height="320" />
+  </td>
+   <td>
+    <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-add-note-overlay.png width="180" height="320" />
+  </td>
+ </tr>
+ <tr>
+  <td>View all open tickets in queue.</td>
+  <td>All closed tickets.</td>
+  <td>Search by email or name.</td>
+  <td>Detail view</td>
+ </tr>
+ </table>
 
 ## Built using
 
