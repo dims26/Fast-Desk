@@ -58,4 +58,5 @@
     <string name="title_hint">Input title</string>
     <string name="hyphen_separator">-</string>
     <string name="send_button_content_description">send button</string>
+    <string name="delete_ticket_content_description">delete ticket</string>
 </resources>

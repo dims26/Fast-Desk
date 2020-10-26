@@ -98,6 +98,7 @@ public class NoteInputFragment extends DialogFragment implements View.OnClickLis
         if (updater.isViewSwitchVisible()) {viewSwitch.setVisibility(View.VISIBLE);}
         else {viewSwitch.setVisibility(View.GONE);}
 
+
         ids = Arrays.asList(R.id.imageView1, R.id.imageView2, R.id.imageView3);
 
         //prevent cancelling the DialogFragment by touching outside it's bounds

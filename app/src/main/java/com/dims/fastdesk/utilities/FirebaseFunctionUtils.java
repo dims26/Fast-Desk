@@ -19,6 +19,7 @@ public class FirebaseFunctionUtils{
     private static String URL_MOVE;
     private static String URL_CLOSE;
     private static String URL_CUSTOMER;
+    private static String URL_CUSTOMER_CLOSE;
 
     static {
         try {
@@ -39,6 +40,8 @@ public class FirebaseFunctionUtils{
                 URL_CLOSE = jsonReader.nextString();
                 jsonReader.nextName();
                 URL_CUSTOMER = jsonReader.nextString();
+                jsonReader.nextName();
+                URL_CUSTOMER_CLOSE = jsonReader.nextString();
             }
             jsonReader.endObject();
             jsonReader.close();
@@ -150,6 +153,27 @@ public class FirebaseFunctionUtils{
 
         Request request = new Request.Builder()
                 .url(URL_CLOSE
+                        + "?token=" + token
+                        + "&path=" + path
+                )
+                .get()
+                .build();
+        client.newCall(request)
+                //enqueue enables an asynchronous call and retrieval of the result via a callback
+                .enqueue(callback);
+    }
+
+    /**Called by signed in customer to close the ticket
+     *
+     * @param token An auth token from the currently logged in user to enable backend authentication
+     * @param path reference to the ticket in the database
+     * @param callback The callback which defines the actions to be taken depending on the success
+     */
+    public static void customerCloseTicket(String token, String path, Callback callback) {
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(URL_CUSTOMER_CLOSE
                         + "?token=" + token
                         + "&path=" + path
                 )

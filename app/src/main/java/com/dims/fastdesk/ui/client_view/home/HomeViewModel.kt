@@ -172,6 +172,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
     override lateinit var imageDownloadUriList: List<String>
     override var noteEntry: MutableMap<String, Any> = HashMap()
     override fun isViewSwitchVisible(): Boolean = false
+
     override fun isTitleVisible(): Boolean = true
     private val ticketCreatedLiveData = MutableLiveData(NetworkState.IDLE)
 
@@ -219,6 +220,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application), N
         note[Ticket.NOTES_BODY] = noteEntry[Ticket.NOTES_BODY] ?: ""
         note[Ticket.NOTES_AUTHOR] = "$fname $lname"
         note[Ticket.NOTES_DEPARTMENT] = "customer"
+        note[Ticket.NOTES_CUSTOMER_VISIBLE] = true
         with(noteEntry[Ticket.NOTES_IMAGES]){
             if (this != null)
                 note[Ticket.NOTES_IMAGES] = this

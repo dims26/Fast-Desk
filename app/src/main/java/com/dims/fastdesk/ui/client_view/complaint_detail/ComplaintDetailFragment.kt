@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -27,6 +28,7 @@ class ComplaintDetailFragment : Fragment() {
     private lateinit var titleTextView: TextView
     private lateinit var notesRecycler: RecyclerView
     private lateinit var addNoteButton: Button
+    private lateinit var closeTicketButton: ImageButton
 
     private lateinit var viewModel: TicketDetailViewModel
     private lateinit var adapter: ComplaintListAdapter
@@ -44,6 +46,7 @@ class ComplaintDetailFragment : Fragment() {
             notesRecycler = findViewById(R.id.notes_list_recycler)
             addNoteButton = findViewById(R.id.add_note_button)
             titleTextView = findViewById(R.id.title_text_view)
+            closeTicketButton = findViewById(R.id.close_button)
         }
 
         val myArgs = ComplaintDetailFragmentArgs.fromBundle(
@@ -74,6 +77,10 @@ class ComplaintDetailFragment : Fragment() {
             noteInputFragment.show(manager, "fragment_edit_name")
         }
 
+        closeTicketButton.setOnClickListener {
+            viewModel.customerCloseTicket()
+        }
+
         setObservers()
     }
 
@@ -99,7 +106,7 @@ class ComplaintDetailFragment : Fragment() {
                 }
                 NetworkState.NOT_FOUND -> {
                     viewModel.noteEntry.clear()
-                    Snackbar.make(requireActivity().window.decorView.rootView, "Ticket might have been closed",
+                    Snackbar.make(requireActivity().window.decorView.rootView, "Ticket closed",
                             Snackbar.LENGTH_SHORT
                     ).show()
                     NavHostFragment.findNavController(this).popBackStack()
@@ -112,5 +119,6 @@ class ComplaintDetailFragment : Fragment() {
                 }
             }
         })
+
     }
 }

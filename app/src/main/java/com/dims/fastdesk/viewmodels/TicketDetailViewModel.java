@@ -119,6 +119,7 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
         note.put(Ticket.NOTES_BODY, noteEntryMap.get(Ticket.NOTES_BODY));
         note.put(Ticket.NOTES_AUTHOR, ticket.getCustomerName());
         note.put(Ticket.NOTES_DEPARTMENT, "customer");
+        note.put(Ticket.NOTES_CUSTOMER_VISIBLE, isCustomerView);
         if (noteEntryMap.get(Ticket.NOTES_IMAGES) != null)
             note.put(Ticket.NOTES_IMAGES, noteEntryMap.get(Ticket.NOTES_IMAGES));
         setNoteEntry(note);
@@ -277,6 +278,18 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
                 });
     }
 
+    public void customerCloseTicket() {
+        FirebaseAuth.getInstance().getCurrentUser().getIdToken(true)
+                .addOnSuccessListener(new OnSuccessListener<GetTokenResult>() {
+                    @Override
+                    public void onSuccess(GetTokenResult getTokenResult) {
+                        moveTicketLiveData.postValue(MoveTicketState.LOADING);
+                        FirebaseFunctionUtils.customerCloseTicket(getTokenResult.getToken(),
+                                ticket.getPath(), getMoveTicketCallback());
+                    }
+                });
+    }
+
     private Callback getMoveTicketCallback() {
         return new Callback() {
             @Override
@@ -330,4 +343,5 @@ public class TicketDetailViewModel extends AndroidViewModel implements NoteUpdat
             listenerRegistration.remove();
         super.onCleared();
     }
+
 }
