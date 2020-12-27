@@ -19,7 +19,7 @@ Android Issue management client following MVVM pattern with back-end implemented
  <tr>
     <td><b style="font-size:30px">Queue view</b></td>
     <td><b style="font-size:30px">Closed Tickets</b></td>
-    <td><b style="font-size:30px">Search</b></td>
+    <td><b style="font-size:30px">Search Customers</b></td>
     <td><b style="font-size:30px">Detail</b></td>
  </tr>
  <tr>
@@ -86,7 +86,7 @@ Android Issue management client following MVVM pattern with back-end implemented
     <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-new-complaint-overlay.png width="180" height="320" />
   </td>
    <td>
-    <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-detail-overlay.png width="180" height="320" />
+    <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-complaint-detail-overlay.png width="180" height="320" />
   </td>
    <td>
     <img src=https://github.com/dims26/Fast-Desk/blob/master/screens/customer-add-note-overlay.png width="180" height="320" />
